@@ -1,0 +1,14 @@
+.DS_Store
+node_modules/
+coverage/
+checkstyle-result.xml
+*.log
+*.env
+tmp/
+build
+npm-shrinkwrap.json
+.vscode
+google.json
+uploads/
+.nyc_output
+package-lock.json
