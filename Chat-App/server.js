@@ -24,22 +24,48 @@ var Message = mongoose.model('Message', {
     }
 })
 
-app.get('/messages', (req, res) => {
-    Message.find({}, (err, messages) => {
-        res.send(messages)
-    })
+app.get('/messages', async (req, res) => {
+    try {
+        Message.find({}, (err, messages) => {
+            res.send(messages)
+        })
+    } catch(error) {
+        res.sendStatus(500)
+        console.log("error found", error);
+    }
 })
 
-app.post('/messages', (req, res) => {
-    var message = new Message(req.body);
+app.get('/messages/:user', async (req, res) => {
+    try {
+        var user = req.params.user;
+        Message.find({ name: user }, (err, messages) => {
+            res.send(messages)
+        })
+    } catch(error) {
+        res.sendStatus(500)
+        console.log("error found", error);
+    }
+})
 
-    message.save((err) => {
-        if(err)
-            sendStatus(500)
-        
-        io.emit('message', req.body);
-        res.sendStatus(200)
-    })
+app.post('/messages', async (req, res) => {
+    try {
+        var message = new Message(req.body);
+        var savedMessage = await message.save()
+        console.log("message saved");
+
+        var censored = await Message.findOne({ message: 'fuck' })
+
+        if(censored)
+            await Message.remove({ _id: censored.id })
+        else
+            io.emit('message', req.body);
+            res.sendStatus(200)
+    } catch(error) {
+        res.sendStatus(500)
+        console.log("error found", error);
+    } finally {
+        console.log("Message posted nonetheless");
+    }
 })
 
 io.on('connection', (socket) => {
